@@ -1,11 +1,13 @@
-//import params from './config';
-
+// Define constants such as API base URL
 const url = 'https://api.spotify.com/v1/';
 const redirect_uri = encodeURIComponent(cfgparams.redirectUri);
-const authorize_header = `https://accounts.spotify.com/authorize?client_id=${cfgparams.clientID}&response_type=token&redirect_uri=${redirect_uri}&scope=user-library-read`;
-console.log(redirect_uri);
+const authorize_header = `https://accounts.spotify.com/authorize?
+	client_id=${cfgparams.clientID}&response_type=token&redirect_uri=${redirect_uri}&
+	scope=user-library-read`;
 let accessToken = '';
 
+// Kind of a hack: if current URL doesn't have a hash, go to Spotify authorization page
+// Otherwise get params from hash and run getData()
 if (!window.location.hash) {
     window.location.href = authorize_header;
 } else {
@@ -15,8 +17,10 @@ if (!window.location.hash) {
     getData();
 }
 
+// Function to get some data about user's saved albums
 async function getData () {
-    let requestUrl = url + 'me/albums?limit=50';
+	// URL and params for request for data about saved albums
+    var requestUrl = url + 'me/albums?limit=50';
     const requestOptions = {
         method: 'GET',
         headers: {
@@ -24,30 +28,36 @@ async function getData () {
         }
     };
 
-    let first = true;
-    let artists = [];
+    var first = true;
+    var artists = [];
 
-    let tracksResponse = await httpsRequest(url + 'me/tracks?limit=1', requestOptions);
+	// First get data about saved songs
+    var tracksResponse = await httpsRequest(url + 'me/tracks?limit=1', requestOptions);
 
+	// While more albums are available, get the next max 50 albums saved
     while(requestUrl) {
         const response = await httpsRequest(requestUrl, requestOptions);
 
+		// If first query for albums, write amt of albums and songs saved to ./index.html
         if(first) {
             first = false;
-            document.querySelector("#information").innerHTML = `You have ${response.total} albums and ${tracksResponse.total} songs saved`;
+            document.querySelector("#information").innerHTML = 
+				`You have ${response.total} albums and ${tracksResponse.total} songs saved`;
         }
 
+		// For each album add artist data to list of artists
         for(let i=0; i<response.items.length; i++) {
             artists = artists.concat(response.items[i].album.artists);
         }
 
+		// response.next gives URL to next set of data
         requestUrl = response.next;
     }
 
-    let artistSet = new Set();
-    let genres = [];
+    var artistSet = new Set();
+    var genres = [];
 
-    let i = 0;
+	// go through artists data and extract genres
     for(let i=0; i<artists.length;) {
         let artistIds = [];
         for(let j=0; j<50 && i<artists.length; j++) {
@@ -56,17 +66,18 @@ async function getData () {
             i++;
         }
         let artistResponse = await httpsRequest(url + 'artists?ids=' + artistIds.join(), requestOptions);
-        for(let i=0; i<artistResponse.artists.length; i++) {
-            genres = genres.concat(artistResponse.artists[i].genres);
+        for(let k=0; k<artistResponse.artists.length; k++) {
+            genres = genres.concat(artistResponse.artists[k].genres);
         }
     }
 
     document.querySelector("#artist-amt").innerText = `You have saved albums from ${artistSet.size} different artists`;
 
     genres.sort();
-    let genresTop = [];
+    var genresTop = [];
 
-    let amt = 1;
+	// Count how many albums of each genre saved
+    var amt = 1;
     for(let i=1; i<genres.length; i++) {
         if(genres[i] === genres[i-1]) {
             amt++;
@@ -88,6 +99,7 @@ async function getData () {
     }
 }
 
+// Function for https requests
 async function httpsRequest (requestUrl, requestOptions) { 
     try {
         const response = await fetch(requestUrl, requestOptions);
