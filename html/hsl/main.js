@@ -5,8 +5,8 @@ var markers = {};
 
 // Get leaflet tiles from HSL API
 var normalTiles = L.tileLayer('https://cdn.digitransit.fi/map/v1/{id}/{z}/{x}/{y}.png', {
-        attribution: 'Map data &copy;
-			<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+        attribution: 'Map data &copy;' +
+			'<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
         	'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
         maxZoom: 19,
         tileSize: 512,
@@ -43,9 +43,9 @@ client.on('message', function (topic, message, packet) {
 	// If this vehicle is already tracked, update position; otherwise add to markers array
     if(markers[vhclNum]) {
         markers[vhclNum].setLatLng([vhclLat, vhclLng]);
-		markers[vhclNum].bindToolTip(vhclRoute);
+		markers[vhclNum].bindTooltip(vhclRoute);
     } else {
         markers[vhclNum] = L.marker([vhclLat, vhclLng]).addTo(map);
-		markers[vhclNum].bindToolTip(vhclRoute);
+		markers[vhclNum].bindTooltip(vhclRoute);
     }
 });
