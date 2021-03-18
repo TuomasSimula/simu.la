@@ -11,7 +11,7 @@ print()
 config = configparser.ConfigParser()
 config.read("../data/config.ini")
 
-
+# Just testing basic mysql on python
 conn = pymysql.connect(
         db=config["DATABASE"]["DB"],
         user=config["DATABASE"]["USERNAME"],
@@ -19,10 +19,10 @@ conn = pymysql.connect(
         host=config["DATABASE"]["HOST"])
 c = conn.cursor()
 
-c.execute("INSERT INTO numbers VALUES (1, 'ONE')")
-c.execute("INSERT INTO numbers VALUES (2, 'TWO')")
-c.execute("INSERT INTO numbers VALUES (3, 'THREE')")
+# Add empty item to numbers in test database
+c.execute("INSERT INTO numbers VALUES ()")
 conn.commit()
 
+# Return all items from numbers in test database
 c.execute("SELECT * FROM numbers")
-print([(r[0], r[1]) for r in c.fetchall()])
+print([(r[0]) for r in c.fetchall()])
